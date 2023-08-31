@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import instance from '../../constants/axios';
 import { useNavigate, Link } from 'react-router-dom';
+import { toast } from 'react-hot-toast';
 
 const Signup = () => {
     const [firstname, setFirstname] = useState('');
@@ -9,24 +10,52 @@ const Signup = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rePassword, setRePassword] = useState('');
-    const [error, setError] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const navigate = useNavigate();
 
+    const handleValidations = () => {};
+
     const handleSignup = async () => {
         try {
-            if (!firstname || !lastname || !phone || !email || !password || !rePassword) {
-                setError(true);
-                return false;
-            } else if (password !== rePassword) {
-                setError(true);
-                return false;
+            const validationErrors = {};
+
+            if (!firstname.trim()) {
+                validationErrors.firstname = 'First name is required';
+            }
+            if (!lastname.trim()) {
+                validationErrors.lastname = 'Last name is required';
+            }
+            if (!phone.trim()) {
+                validationErrors.phone = 'Phone number is required';
+            }
+            if (!email.trim()) {
+                validationErrors.email = 'Email is required';
+            }
+            if (!password.trim()) {
+                validationErrors.password = 'Password is required';
+            }
+            if (!rePassword.trim()) {
+                validationErrors.rePassword = 'Please confirm your password';
+            }
+            if (password !== rePassword) {
+                validationErrors.password = "Passwords don't match";
+                validationErrors.rePassword = "Passwords don't match";
             }
 
-            const responce = await instance.post('/signup', { firstname, lastname, phone, email, password });
-            const { data } = responce;
-            console.log(data);
-            navigate(`/verifyotp/${phone}`);
+            if (Object.keys(validationErrors).length > 0) {
+                setErrors(validationErrors);
+                return;
+            }
+            instance
+                .post('/uniqueNumberCheck', { phone })
+                .then(async () => {
+                    await instance.post('/signup', { firstname, lastname, phone, email, password });
+                    navigate(`/verifyotp/${phone}`);
+                })
+                .catch(({ response }) => {
+                    toast.error(response.data.error);
+                });
         } catch (error) {
             console.error(error);
         }
@@ -51,7 +80,7 @@ const Signup = () => {
                                 onChange={(e) => setFirstname(e.target.value)}
                                 placeholder="Enter your firstname"
                             />
-                            {error && !firstname && <span className="text-red-500">Enter valid firstname</span>}
+                            {errors.firstname && <span className="text-red-500">{errors.firstname}</span>}
                         </div>
                         <div className="mr-7">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="lastName">
@@ -66,7 +95,7 @@ const Signup = () => {
                                 onChange={(e) => setLastname(e.target.value)}
                                 placeholder="Enter your lastname"
                             />
-                            {error && !lastname && <span className="text-red-500">Enter valid lastname</span>}
+                            {errors.lastname && <span className="text-red-500">{errors.lastname}</span>}
                         </div>
                         <div className="mr-7">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
@@ -81,7 +110,7 @@ const Signup = () => {
                                 onChange={(e) => setPhone(e.target.value)}
                                 placeholder="Enter your 10 digit mobile number"
                             />
-                            {error && !phone && <span className="text-red-500">Enter valid phone number</span>}
+                            {errors.phone && <span className="text-red-500">{errors.phone}</span>}
                         </div>
                         <div className="mr-7">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
@@ -96,7 +125,7 @@ const Signup = () => {
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email id"
                             />
-                            {error && !email && <span className="text-red-500">Enter valid email</span>}
+                            {errors.email && <span className="text-red-500">{errors.email}</span>}
                         </div>
                         <div className="mr-7">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
@@ -111,7 +140,7 @@ const Signup = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Choose a strong password"
                             />
-                            {error && !password && <span className="text-red-500">Enter valid password</span>}
+                            {errors.password && <span className="text-red-500">{errors.password}</span>}
                         </div>
                         <div className="mr-7">
                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="rePassword">
@@ -126,12 +155,7 @@ const Signup = () => {
                                 onChange={(e) => setRePassword(e.target.value)}
                                 placeholder="Re-enter your strong password"
                             />
-                            {error && !rePassword && (
-                                <span className="text-red-500">Please re-enter your password here</span>
-                            )}
-                            {error && password !== rePassword && (
-                                <span className="text-red-500">Passwords does't match</span>
-                            )}
+                            {errors.rePassword && <span className="text-red-500">{errors.rePassword}</span>}
                         </div>
                         <p>
                             Already have an account?{' '}

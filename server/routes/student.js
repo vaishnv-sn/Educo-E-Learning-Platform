@@ -39,9 +39,9 @@ router.route('/otpverification').post(async (req, res) => {
             .then(async ({ status }) => {
                 if (status === 'approved') {
                     const student = await TemporaryUser.findOne({ phone: phone });
-                    if (!student) {
+                    /* if (!student) {
                         return res.status(404).json({ error: 'verification timeout' });
-                    }
+                    } */
                     const { createdAt, ...studentData } = student.toObject();
                     const newStudent = new Student(studentData);
                     let newUser = await newStudent.save();
@@ -54,14 +54,13 @@ router.route('/otpverification').post(async (req, res) => {
                         console.log(err);
                         res.status(400).json({ error: 'Token generating failed' })
                     })
-
                 } else {
                     res.status(400).json({ error: 'Invalid OTP.' });
                 }
             });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'An error occurred during OTP verification.' });
+        res.status(500).json({ error: 'Maximum check attempts reached, Please try again later' });
     }
 });
 
@@ -74,7 +73,23 @@ router.route('/otpresend').post(async (req, res) => {
         res.status(200).json({ message: "OTP re-sended successfully" });
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "An error occurred while re-sending OTP." });
+        res.status(500).json({ error: "Maximum send attempts reached. Try again after 10 minutes" });
+    }
+});
+
+router.route('/uniqueNumberCheck').post(async (req, res) => {
+    try {
+        const { phone } = req.body;
+        const student = await Student.findOne({ phone: phone });
+        if (student) {
+            res.status(500).json({ error: "User already exist in this number, try another mobile number." });
+        } else {
+            res.status(200).json({ message: "Unique number identified." });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Unfortunate error occured. Please try again later." });
+
     }
 })
 

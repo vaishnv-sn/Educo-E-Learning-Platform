@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import instance from '../../constants/axios';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const OtpInputPage = () => {
     const [otp, setOtp] = useState('');
@@ -38,24 +39,24 @@ const OtpInputPage = () => {
         instance
             .post('/otpverification', { otp, phone })
             .then(({ data }) => {
-                alert(data.message);
+                toast.success(data.message);
                 localStorage.setItem('user', JSON.stringify(data.newUser));
                 localStorage.setItem('token', JSON.stringify(data.token));
                 navigate('/');
             })
-            .catch((err) => {
-                alert(err);
+            .catch(({ response }) => {
+                toast.error(response.data.error);
             });
     };
 
     const handleResendOtp = () => {
         instance
             .post('/otpresend', { phone })
-            .then((data) => {
-                console.log(data);
+            .then(({ data }) => {
+                toast.success(data.message);
             })
-            .catch((err) => {
-                console.log(err);
+            .catch(({ response }) => {
+                toast.error(response.data.error);
             });
 
         setCountdown(45);
