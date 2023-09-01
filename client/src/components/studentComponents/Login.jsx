@@ -1,21 +1,32 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-//import instance from '../../constants/axios';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import instance from '../../constants/axios';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const auth = localStorage.getItem('user');
+        if (auth) {
+            navigate('/');
+        }
+    });
+
     const handleLogin = () => {
         console.log(email, password);
-        /* instance
+        instance
             .post('/login', { email, password })
-            .then((data) => {
-                console.log(data);
+            .then(({ data }) => {
+                localStorage.setItem('user', JSON.stringify(data.student));
+                localStorage.setItem('token', JSON.stringify(data.auth));
+                navigate('/');
             })
-            .catch((err) => {
-                console.log(err);
-            }); */
+            .catch(({ response }) => {
+                alert(response.data.error);
+            });
     };
 
     return (
@@ -52,7 +63,7 @@ const Login = () => {
                                 placeholder="Enter your password"
                             />
                             <div className="flex justify-between my-4">
-                                <p className="text-red-600">Forgot password?</p>
+                                <Link className="text-red-600">Forget password?</Link>
                                 <p>
                                     Don't have an account?{' '}
                                     <Link to={'/signup'} className="text-green-600">

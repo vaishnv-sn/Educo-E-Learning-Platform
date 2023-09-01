@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-const { authorizeRole, signUser, signAdmin } = require('../middlewares/jwt');
+const { authorizeRole, signUser } = require('../middlewares/jwt');
 const TemporaryUser = require('../models/temporaryUser');
 const Student = require('../models/student')
 const accountSid = process.env.TWILIO_SID;
@@ -91,6 +91,33 @@ router.route('/uniqueNumberCheck').post(async (req, res) => {
         res.status(500).json({ error: "Unfortunate error occured. Please try again later." });
 
     }
-})
+});
+
+router.route('/login').post(async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        let student = await Student.findOne({ email: email });
+        if (!student) {
+            return res.status(400).json({ auth: false, error: 'User does not exist' });
+        } else {
+            const passwordCheck = await bcrypt.compare(password, student.password);
+            if (!passwordCheck) {
+                return res.status(400).json({ auth: false, error: "Password incorrect" });
+            } else {
+                signUser(student).then((token) => {
+                    student = student.toObject();
+                    delete student.password;
+                    res.status(200).json({ student, auth: token });
+                }).catch((err) => {
+                    console.log(err);
+                    res.status(400).json({ error: 'token generation failed' });
+                });
+            }
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Login failed." });
+    }
+});
 
 module.exports = router;

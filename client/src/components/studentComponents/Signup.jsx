@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import instance from '../../constants/axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -14,7 +14,12 @@ const Signup = () => {
 
     const navigate = useNavigate();
 
-    const handleValidations = () => {};
+    useEffect(() => {
+        const auth = localStorage.getItem('user');
+        if (auth) {
+            navigate('/');
+        }
+    });
 
     const handleSignup = async () => {
         try {
