@@ -55,8 +55,9 @@ const Signup = () => {
             instance
                 .post('/uniqueNumberCheck', { phone })
                 .then(async () => {
-                    await instance.post('/signup', { firstname, lastname, phone, email, password });
-                    navigate(`/verifyotp/${phone}`);
+                    const id = await instance.post('/signup', { firstname, lastname, phone, email, password });
+                    console.log(id);
+                    navigate(`/verifyotp/${id.data.id + '_' + phone}`);
                 })
                 .catch(({ response }) => {
                     toast.error(response.data.error);

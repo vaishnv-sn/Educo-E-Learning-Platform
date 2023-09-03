@@ -7,6 +7,7 @@ import Login from './components/studentComponents/Login';
 import Signup from './components/studentComponents/Signup';
 import OtpInputPage from './components/studentComponents/OtpInputPage';
 import Home from './components/studentComponents/Home';
+import Profile from './components/studentComponents/Profile';
 
 function App() {
     return (
@@ -17,7 +18,8 @@ function App() {
                     <Route path="/" element={<Home />} />
                     <Route path="/signup" element={<Signup />} />
                     <Route path="/login" element={<Login />} />
-                    <Route path="/verifyotp/:phone" element={<OtpInputPage />} />
+                    <Route path="/verifyotp/:idAndPhone" element={<OtpInputPage />} />
+                    <Route path="/profile" element={<Profile />} />
                 </Routes>
             </BrowserRouter>
             <Toaster position="top-center" />

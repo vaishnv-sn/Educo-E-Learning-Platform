@@ -7,7 +7,9 @@ const OtpInputPage = () => {
     const [otp, setOtp] = useState('');
     const [countdown, setCountdown] = useState(45);
     const [isButtonVisible, setIsButtonVisible] = useState(false);
-    const { phone } = useParams();
+    const { idAndPhone } = useParams();
+    console.log(idAndPhone);
+    const [id, phone] = idAndPhone.split('_');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -37,7 +39,7 @@ const OtpInputPage = () => {
     const handleSubmit = (event) => {
         event.preventDefault();
         instance
-            .post('/otpverification', { otp, phone })
+            .post('/otpverification', { otp, id, phone })
             .then(({ data }) => {
                 toast.success(data.message);
                 localStorage.setItem('user', JSON.stringify(data.newUser));
